@@ -190,26 +190,40 @@
   BOOL success = [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:urlString]];
   result([[NSNumber alloc] initWithBool:success]);
 #else
-  // Skip canOpenURL: — it requires LSApplicationQueriesSchemes and always
-  // returns NO for App-Prefs without it, even when the OS would honour the URL.
-  // Instead, attempt the open directly and fall back only if it truly fails.
-  NSURL *locationServicesURL = [NSURL URLWithString:@"App-Prefs:Privacy&path=LOCATION"];
+  // Try known Location Services URL schemes from newest to oldest.
+  // Apple changed / restricted App-Prefs: across iOS versions so we cascade
+  // through candidates and fall back to the app's own settings page as a last
+  // resort (which still surfaces the per-app Location row).
+  NSArray<NSString *> *candidates = @[
+    @"App-Prefs:LOCATION_SERVICES",          // iOS 18 / iOS 26+
+    @"App-Prefs:root=Privacy&path=LOCATION", // iOS 13–17 (explicit root=)
+    @"App-Prefs:Privacy&path=LOCATION",      // iOS 13–17 (short form)
+    UIApplicationOpenSettingsURLString,       // final fallback: app settings
+  ];
+  [self tryOpenURLs:candidates atIndex:0 result:result];
+#endif
+}
+
+#if !TARGET_OS_OSX
+- (void)tryOpenURLs:(NSArray<NSString *> *)urls
+            atIndex:(NSUInteger)index
+             result:(FlutterResult)result {
+  if (index >= urls.count) {
+    result([[NSNumber alloc] initWithBool:NO]);
+    return;
+  }
+  NSURL *url = [NSURL URLWithString:urls[index]];
   [[UIApplication sharedApplication]
-   openURL:locationServicesURL
+   openURL:url
    options:[[NSDictionary alloc] init]
    completionHandler:^(BOOL success) {
     if (success) {
       result([[NSNumber alloc] initWithBool:YES]);
     } else {
-      // Fallback: open the app's own settings page (shows Location row)
-      [[UIApplication sharedApplication]
-       openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
-       options:[[NSDictionary alloc] init]
-       completionHandler:^(BOOL fallbackSuccess) {
-        result([[NSNumber alloc] initWithBool:fallbackSuccess]);
-      }];
+      [self tryOpenURLs:urls atIndex:index + 1 result:result];
     }
   }];
-#endif
 }
+#endif
+
 @end

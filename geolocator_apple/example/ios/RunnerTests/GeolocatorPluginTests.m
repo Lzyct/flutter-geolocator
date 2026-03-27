@@ -25,19 +25,19 @@
   id mockPermissionHandler = OCMClassMock([PermissionHandler class]);
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setPermissionHandlerOverride: mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler checkPermission]).andReturn(kCLAuthorizationStatusDenied);
-    
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"checkPermission"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"checkPermission should return denied permission index (which is 1)."];
   [plugin handleMethodCall:call
                                result:^(id  _Nullable result) {
     XCTAssertEqual(result, @1);
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler checkPermission]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
 }
@@ -46,19 +46,19 @@
   id mockPermissionHandler = OCMClassMock([PermissionHandler class]);
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setPermissionHandlerOverride:mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler requestPermission:([OCMArg invokeBlockWithArgs:@(kCLAuthorizationStatusAuthorizedAlways), nil]) errorHandler:[OCMArg any]]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"requestPermission"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"requestPermission should return always permission index (which is 3)."];
   [plugin handleMethodCall:call
                     result:^(id  _Nullable result) {
     XCTAssertEqual(result, @3);
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler requestPermission:[OCMArg any] errorHandler:[OCMArg any]]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
 }
@@ -67,12 +67,12 @@
   id mockPermissionHandler = OCMClassMock([PermissionHandler class]);
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setPermissionHandlerOverride:mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler requestPermission:[OCMArg any] errorHandler:([OCMArg invokeBlockWithArgs:@"error_code", @"error_description", nil])]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"requestPermission"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"requestPermission should return error."];
   [plugin handleMethodCall:call
                     result:^(id  _Nullable result) {
@@ -81,7 +81,7 @@
     XCTAssertEqualObjects(error.message, @"error_description");
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler requestPermission:[OCMArg any] errorHandler:[OCMArg any]]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
 }
@@ -95,20 +95,20 @@
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setGeolocationHandlerOverride:mockGeolocationHandler];
   [plugin setPermissionHandlerOverride:mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler hasPermission]).andReturn(YES);
   OCMStub([mockGeolocationHandler getLastKnownPosition]).andReturn(dummyLocation);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"getLastKnownPosition"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"getLastKnownPosition should return location when permission are granted."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertEqualObjects(result[@"latitude"], @54.0);
     XCTAssertEqualObjects(result[@"longitude"], @6.4);
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler hasPermission]);
   OCMVerify(times(1), [mockGeolocationHandler getLastKnownPosition]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -120,12 +120,12 @@
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setGeolocationHandlerOverride:mockGeolocationHandler];
   [plugin setPermissionHandlerOverride:mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler hasPermission]).andReturn(NO);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"getLastKnownPosition"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"getLastKnownPosition should return error when permission are denied."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     FlutterError *error = result;
@@ -133,7 +133,7 @@
     XCTAssertEqualObjects(error.message, @"User denied permissions to access the device's location.");
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler hasPermission]);
   OCMVerify(never(), [mockGeolocationHandler getLastKnownPosition]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -145,12 +145,12 @@
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setGeolocationHandlerOverride:mockGeolocationHandler];
   [plugin setPermissionHandlerOverride:mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler hasPermission]).andReturn(NO);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"getCurrentPosition"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"getCurrentPosition should return error when permission are denied."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     FlutterError *error = result;
@@ -158,7 +158,7 @@
     XCTAssertEqualObjects(error.message, @"User denied permissions to access the device's location.");
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler hasPermission]);
   OCMVerify(never(), [mockGeolocationHandler requestPositionWithDesiredAccuracy:kCLLocationAccuracyBest resultHandler:[OCMArg any] errorHandler:[OCMArg any]]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -171,22 +171,22 @@
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setGeolocationHandlerOverride:mockGeolocationHandler];
   [plugin setPermissionHandlerOverride:mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler hasPermission]).andReturn(YES);
   OCMStub([mockGeolocationHandler requestPositionWithDesiredAccuracy:kCLLocationAccuracyHundredMeters
                                                        resultHandler:([OCMArg invokeBlockWithArgs:dummyLocation, nil])
                                                         errorHandler:[OCMArg any]]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"getCurrentPosition"
                                                               arguments:@{@"accuracy" : @2}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"getCurrentPosition should return dummy location when permission are granted."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertEqualObjects(result[@"latitude"], @54.0);
     XCTAssertEqualObjects(result[@"longitude"], @6.4);
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler hasPermission]);
   OCMVerify(times(1), [mockGeolocationHandler requestPositionWithDesiredAccuracy:kCLLocationAccuracyHundredMeters resultHandler:[OCMArg any] errorHandler:[OCMArg any]]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -198,15 +198,15 @@
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setGeolocationHandlerOverride:mockGeolocationHandler];
   [plugin setPermissionHandlerOverride:mockPermissionHandler];
-  
+
   OCMStub([mockPermissionHandler hasPermission]).andReturn(YES);
   OCMStub([mockGeolocationHandler requestPositionWithDesiredAccuracy:kCLLocationAccuracyHundredMeters
                                                        resultHandler:[OCMArg any]
                                                         errorHandler:([OCMArg invokeBlockWithArgs:@"error_code", @"error_description", nil])]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"getCurrentPosition"
                                                               arguments:@{@"accuracy" : @2}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"getCurrentPosition should return a FlutterError when GeolocationHandler receives an error."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     FlutterError *error = result;
@@ -214,7 +214,7 @@
     XCTAssertEqualObjects(error.message, @"error_description");
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockPermissionHandler hasPermission]);
   OCMVerify(times(1), [mockGeolocationHandler requestPositionWithDesiredAccuracy:kCLLocationAccuracyHundredMeters resultHandler:[OCMArg any] errorHandler:[OCMArg any]]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -226,18 +226,18 @@
   id mockLocationAccuracyHandler = OCMClassMock([LocationAccuracyHandler class]);
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setLocationAccuracyHandlerOverride:mockLocationAccuracyHandler];
-  
+
   OCMStub([mockLocationAccuracyHandler getLocationAccuracyWithResult:([OCMArg invokeBlockWithArgs:@((LocationAccuracy)precise), nil])]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"getLocationAccuracy"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"getLocationAccuracy should return precise location accuracy."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertEqualObjects(result, @((LocationAccuracy)precise));
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockLocationAccuracyHandler getLocationAccuracyWithResult:[OCMArg any]]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
 }
@@ -246,19 +246,19 @@
   id mockLocationAccuracyHandler = OCMClassMock([LocationAccuracyHandler class]);
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setLocationAccuracyHandlerOverride:mockLocationAccuracyHandler];
-  
+
   OCMStub([mockLocationAccuracyHandler requestTemporaryFullAccuracyWithResult:([OCMArg invokeBlockWithArgs:@((LocationAccuracy)precise), nil])
                                                                    purposeKey:[OCMArg any]]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"requestTemporaryFullAccuracy"
                                                               arguments:@{@"purposeKey" : @"dummy_key"}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"requestTemporaryFullAccuracy should return precise location accuracy."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertEqualObjects(result, @((LocationAccuracy)precise));
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockLocationAccuracyHandler requestTemporaryFullAccuracyWithResult:[OCMArg any]
                                                                                purposeKey:@"dummy_key"]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -268,19 +268,19 @@
   id mockLocationAccuracyHandler = OCMClassMock([LocationAccuracyHandler class]);
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setLocationAccuracyHandlerOverride:mockLocationAccuracyHandler];
-  
+
   OCMStub([mockLocationAccuracyHandler requestTemporaryFullAccuracyWithResult:([OCMArg invokeBlockWithArgs:@((LocationAccuracy)precise), nil])
                                                                    purposeKey:[OCMArg any]]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"requestTemporaryFullAccuracy"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"requestTemporaryFullAccuracy should return precise location accuracy."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertEqualObjects(result, @((LocationAccuracy)precise));
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockLocationAccuracyHandler requestTemporaryFullAccuracyWithResult:[OCMArg any]
                                                                                purposeKey:nil]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -290,19 +290,19 @@
   id mockLocationAccuracyHandler = OCMClassMock([LocationAccuracyHandler class]);
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin setLocationAccuracyHandlerOverride:mockLocationAccuracyHandler];
-  
+
   OCMStub([mockLocationAccuracyHandler requestTemporaryFullAccuracyWithResult:([OCMArg invokeBlockWithArgs:@((LocationAccuracy)precise), nil])
                                                                    purposeKey:[OCMArg any]]);
-  
+
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"requestTemporaryFullAccuracy"
                                                               arguments:@{@"invalid_key" : @"invalid_key"}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"requestTemporaryFullAccuracy should return precise location accuracy."];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertEqualObjects(result, @((LocationAccuracy)precise));
     [expectation fulfill];
   }];
-  
+
   OCMVerify(times(1), [mockLocationAccuracyHandler requestTemporaryFullAccuracyWithResult:[OCMArg any]
                                                                                purposeKey:nil]);
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
@@ -320,36 +320,50 @@
 
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"openAppSettings"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"openAppSettings should return yes."];
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertTrue(result);
     [expectation fulfill];
   }];
-  
+
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
   return;
 }
 
 - (void)testOpenLocationSettings {
   id mockApplication = OCMClassMock([UIApplication class]);
-  OCMStub([mockApplication openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
-                           options:@{}
-                 completionHandler:([OCMArg invokeBlockWithArgs:@(YES), nil])]);
-  OCMStub(ClassMethod([mockApplication sharedApplication])).andReturn(mockApplication);
 
+  // Stub the primary candidate (iOS 18 / iOS 26+) to succeed.
+  OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:LOCATION_SERVICES"]
+                           options:OCMOCK_ANY
+                 completionHandler:([OCMArg invokeBlockWithArgs:@(YES), nil])]);
+
+  // Stub the older candidates and fallback to return NO so the cascade behaves
+  // correctly when they are reached on older OS versions.
+  OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:root=Privacy&path=LOCATION"]
+                           options:OCMOCK_ANY
+                 completionHandler:([OCMArg invokeBlockWithArgs:@(NO), nil])]);
+  OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:Privacy&path=LOCATION"]
+                           options:OCMOCK_ANY
+                 completionHandler:([OCMArg invokeBlockWithArgs:@(NO), nil])]);
+  OCMStub([mockApplication openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
+                           options:OCMOCK_ANY
+                 completionHandler:([OCMArg invokeBlockWithArgs:@(YES), nil])]);
+
+  OCMStub(ClassMethod([mockApplication sharedApplication])).andReturn(mockApplication);
 
   FlutterMethodCall *call = [FlutterMethodCall methodCallWithMethodName:@"openLocationSettings"
                                                               arguments:@{}];
-  
+
   XCTestExpectation *expectation = [self expectationWithDescription:@"openLocationSettings should return yes."];
   GeolocatorPlugin *plugin = [[GeolocatorPlugin alloc] init];
   [plugin handleMethodCall:call result:^(id  _Nullable result) {
     XCTAssertTrue(result);
     [expectation fulfill];
   }];
-  
+
   [self waitForExpectationsWithTimeout:5.0 handler:nil];
 }
 
