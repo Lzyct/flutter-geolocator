@@ -190,23 +190,26 @@
   BOOL success = [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:urlString]];
   result([[NSNumber alloc] initWithBool:success]);
 #else
+  // Skip canOpenURL: — it requires LSApplicationQueriesSchemes and always
+  // returns NO for App-Prefs without it, even when the OS would honour the URL.
+  // Instead, attempt the open directly and fall back only if it truly fails.
   NSURL *locationServicesURL = [NSURL URLWithString:@"App-Prefs:Privacy&path=LOCATION"];
-  if ([[UIApplication sharedApplication] canOpenURL:locationServicesURL]) {
-    [[UIApplication sharedApplication]
-     openURL:locationServicesURL
-     options:[[NSDictionary alloc] init]
-     completionHandler:^(BOOL success) {
-      result([[NSNumber alloc] initWithBool:success]);
-    }];
-  } else {
-    // Fallback to app settings if the Location Services URL is not available
-    [[UIApplication sharedApplication]
-     openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
-     options:[[NSDictionary alloc] init]
-     completionHandler:^(BOOL success) {
-      result([[NSNumber alloc] initWithBool:success]);
-    }];
-  }
+  [[UIApplication sharedApplication]
+   openURL:locationServicesURL
+   options:[[NSDictionary alloc] init]
+   completionHandler:^(BOOL success) {
+    if (success) {
+      result([[NSNumber alloc] initWithBool:YES]);
+    } else {
+      // Fallback: open the app's own settings page (shows Location row)
+      [[UIApplication sharedApplication]
+       openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
+       options:[[NSDictionary alloc] init]
+       completionHandler:^(BOOL fallbackSuccess) {
+        result([[NSNumber alloc] initWithBool:fallbackSuccess]);
+      }];
+    }
+  }];
 #endif
 }
 @end
