@@ -21,7 +21,7 @@
 @property(strong, nonatomic, nonnull) LocationAccuracyHandler *locationAccuracyHandler;
 
 @property(strong, nonatomic, nonnull) PermissionHandler *permissionHandler;
-  
+
 @end
 
 @implementation GeolocatorPlugin
@@ -33,18 +33,18 @@
   FlutterEventChannel *positionUpdatesEventChannel = [FlutterEventChannel
                                                       eventChannelWithName:@"flutter.baseflow.com/geolocator_updates_apple"
                                                       binaryMessenger:registrar.messenger];
-  
+
   FlutterEventChannel *locationServiceUpdatesEventChannel = [FlutterEventChannel eventChannelWithName:@"flutter.baseflow.com/geolocator_service_updates_apple" binaryMessenger:registrar.messenger];
-  
+
   GeolocatorPlugin *instance = [[GeolocatorPlugin alloc] init];
   [registrar addMethodCallDelegate:instance channel:methodChannel];
-  
+
   PositionStreamHandler *positionStreamHandler = [[PositionStreamHandler alloc] initWithGeolocationHandler:instance.createGeolocationHandler];
   [positionUpdatesEventChannel setStreamHandler:positionStreamHandler];
-  
+
   LocationServiceStreamHandler *locationServiceStreamHandler = [[LocationServiceStreamHandler alloc] init];
   [locationServiceUpdatesEventChannel setStreamHandler:locationServiceStreamHandler];
-  
+
 }
 
 - (GeolocationHandler *) createGeolocationHandler {
@@ -101,7 +101,7 @@
   } else if ([@"openAppSettings" isEqualToString:call.method]) {
     [self openSettings:result];
   } else if ([@"openLocationSettings" isEqualToString:call.method]) {
-    [self openSettings:result];
+    [self openLocationSettings:result];
   } else {
     result(FlutterMethodNotImplemented);
   }
@@ -140,7 +140,7 @@
                                details:nil]);
     return;
   }
-  
+
   CLLocation *location = [self.createGeolocationHandler getLastKnownPosition];
   result([LocationMapper toDictionary:location]);
 }
@@ -153,10 +153,10 @@
                                details:nil]);
     return;
   }
-  
+
   CLLocationAccuracy accuracy = [LocationAccuracyMapper toCLLocationAccuracy:(NSNumber *)arguments[@"accuracy"]];
   GeolocationHandler *geolocationHandler = [self createGeolocationHandler];
-  
+
   [geolocationHandler requestPositionWithDesiredAccuracy:accuracy
                                            resultHandler:^(CLLocation *location) {
     result([LocationMapper toDictionary:location]);
@@ -181,6 +181,32 @@
    completionHandler:^(BOOL success) {
     result([[NSNumber alloc] initWithBool:success]);
   }];
+#endif
+}
+
+- (void)openLocationSettings:(FlutterResult)result {
+#if TARGET_OS_OSX
+  NSString *urlString = @"x-apple.systempreferences:com.apple.preference.security?Privacy_LocationServices";
+  BOOL success = [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:urlString]];
+  result([[NSNumber alloc] initWithBool:success]);
+#else
+  NSURL *locationServicesURL = [NSURL URLWithString:@"App-Prefs:Privacy&path=LOCATION"];
+  if ([[UIApplication sharedApplication] canOpenURL:locationServicesURL]) {
+    [[UIApplication sharedApplication]
+     openURL:locationServicesURL
+     options:[[NSDictionary alloc] init]
+     completionHandler:^(BOOL success) {
+      result([[NSNumber alloc] initWithBool:success]);
+    }];
+  } else {
+    // Fallback to app settings if the Location Services URL is not available
+    [[UIApplication sharedApplication]
+     openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
+     options:[[NSDictionary alloc] init]
+     completionHandler:^(BOOL success) {
+      result([[NSNumber alloc] initWithBool:success]);
+    }];
+  }
 #endif
 }
 @end
