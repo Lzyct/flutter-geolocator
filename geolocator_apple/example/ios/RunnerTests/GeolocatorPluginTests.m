@@ -335,17 +335,23 @@
 - (void)testOpenLocationSettings {
   id mockApplication = OCMClassMock([UIApplication class]);
 
-  // Stub the primary candidate (iOS 18 / iOS 26+) to succeed.
+  // Stub the primary candidate (iOS 18+) to succeed.
   OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:LOCATION_SERVICES"]
                            options:OCMOCK_ANY
                  completionHandler:([OCMArg invokeBlockWithArgs:@(YES), nil])]);
 
   // Stub the older candidates and fallback to return NO so the cascade behaves
   // correctly when they are reached on older OS versions.
+  OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:root=Privacy&path=LOCATION_SERVICES"]
+                           options:OCMOCK_ANY
+                 completionHandler:([OCMArg invokeBlockWithArgs:@(NO), nil])]);
   OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:root=Privacy&path=LOCATION"]
                            options:OCMOCK_ANY
                  completionHandler:([OCMArg invokeBlockWithArgs:@(NO), nil])]);
   OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:Privacy&path=LOCATION"]
+                           options:OCMOCK_ANY
+                 completionHandler:([OCMArg invokeBlockWithArgs:@(NO), nil])]);
+  OCMStub([mockApplication openURL:[NSURL URLWithString:@"App-Prefs:root=Privacy"]
                            options:OCMOCK_ANY
                  completionHandler:([OCMArg invokeBlockWithArgs:@(NO), nil])]);
   OCMStub([mockApplication openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]

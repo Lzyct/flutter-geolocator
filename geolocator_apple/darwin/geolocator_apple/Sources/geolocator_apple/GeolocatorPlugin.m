@@ -195,10 +195,12 @@
   // through candidates and fall back to the app's own settings page as a last
   // resort (which still surfaces the per-app Location row).
   NSArray<NSString *> *candidates = @[
-    @"App-Prefs:LOCATION_SERVICES",          // iOS 18 / iOS 26+
-    @"App-Prefs:root=Privacy&path=LOCATION", // iOS 13–17 (explicit root=)
-    @"App-Prefs:Privacy&path=LOCATION",      // iOS 13–17 (short form)
-    UIApplicationOpenSettingsURLString,       // final fallback: app settings
+    @"App-Prefs:LOCATION_SERVICES",          // iOS 18+
+    @"App-Prefs:root=Privacy&path=LOCATION_SERVICES", // iOS 16+ (Privacy & Security -> Location Services)
+    @"App-Prefs:root=Privacy&path=LOCATION", // iOS 13–15 (Privacy -> Location Services)
+    @"App-Prefs:Privacy&path=LOCATION",      // iOS 13–15 (short form)
+    @"App-Prefs:root=Privacy",               // Fallback: Privacy & Security
+    UIApplicationOpenSettingsURLString,      // final fallback: app settings
   ];
   [self tryOpenURLs:candidates atIndex:0 result:result];
 #endif
