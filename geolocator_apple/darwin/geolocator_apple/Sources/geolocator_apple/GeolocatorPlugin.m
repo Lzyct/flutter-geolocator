@@ -201,7 +201,7 @@
           @"App-Prefs:root=Privacy&path=LOCATION_SERVICES",                      // iOS 16–17
           @"App-Prefs:root=Privacy&path=LOCATION",                               // iOS 13–15
           @"App-Prefs:root=Privacy",                                             // Fallback: Privacy root
-          @"prefs:root=LOCATION_SERVICES"
+          @"prefs:root=LOCATION_SERVICES",
           UIApplicationOpenSettingsURLString,                                    // Final fallback
   ];
   [self tryOpenURLs:candidates atIndex:0 result:result];
