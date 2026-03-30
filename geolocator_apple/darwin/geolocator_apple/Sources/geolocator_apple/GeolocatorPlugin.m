@@ -196,7 +196,6 @@
   // resort (which still surfaces the per-app Location row).
   NSArray<NSString *> *candidates = @[
           @"settings-navigation://com.apple.Settings.Privacy.LocationServices", // iOS 26+ (correct pane)
-          @"App-prefs:Privacy&path=LOCATION",           // iOS 15+ fallback
           @"prefs:root=Privacy&path=LOCATION_SERVICES", // older form
           @"prefs:root=Privacy&path=LOCATION",
           @"App-Prefs:LOCATION_SERVICES",                                        // iOS 18
