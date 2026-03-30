@@ -195,13 +195,12 @@
   // through candidates and fall back to the app's own settings page as a last
   // resort (which still surfaces the per-app Location row).
   NSArray<NSString *> *candidates = @[
-          @"settings-navigation://com.apple.Settings.Privacy/LOCATION", // iOS 26+
-          @"App-Prefs:LOCATION_SERVICES",                               // iOS 18
-          @"App-Prefs:root=Privacy&path=LOCATION_SERVICES",             // iOS 16+
-          @"App-Prefs:root=Privacy&path=LOCATION",                      // iOS 13–15
-          @"App-Prefs:Privacy&path=LOCATION",                           // iOS 13–15 short form
-          @"App-Prefs:root=Privacy",                                     // Fallback: Privacy & Security
-          UIApplicationOpenSettingsURLString,                            // Final fallback: app settings
+          @"settings-navigation://com.apple.Settings.Privacy.LocationServices", // iOS 26+ (correct pane)
+          @"App-Prefs:LOCATION_SERVICES",                                        // iOS 18
+          @"App-Prefs:root=Privacy&path=LOCATION_SERVICES",                      // iOS 16–17
+          @"App-Prefs:root=Privacy&path=LOCATION",                               // iOS 13–15
+          @"App-Prefs:root=Privacy",                                             // Fallback: Privacy root
+          UIApplicationOpenSettingsURLString,                                    // Final fallback
   ];
   [self tryOpenURLs:candidates atIndex:0 result:result];
 #endif
@@ -216,15 +215,13 @@
     return;
   }
   NSURL *url = [NSURL URLWithString:urls[index]];
-  if (![[UIApplication sharedApplication] canOpenURL:url]) {
-    // Skip URLs the system won't open (e.g. restricted by MDM)
-    [self tryOpenURLs:urls atIndex:index + 1 result:result];
-    return;
-  }
+  BOOL canOpen = [[UIApplication sharedApplication] canOpenURL:url];
+  NSLog(@"[LocationSettings] Trying: %@ | canOpen: %d", urls[index], canOpen);
   [[UIApplication sharedApplication]
           openURL:url
           options:@{}
 completionHandler:^(BOOL success) {
+    NSLog(@"[LocationSettings] Result for %@: %d", urls[index], success);
     if (success) {
       result([[NSNumber alloc] initWithBool:YES]);
     } else {
