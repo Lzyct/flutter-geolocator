@@ -196,6 +196,9 @@
   // resort (which still surfaces the per-app Location row).
   NSArray<NSString *> *candidates = @[
           @"settings-navigation://com.apple.Settings.Privacy.LocationServices", // iOS 26+ (correct pane)
+          @"App-prefs:Privacy&path=LOCATION",           // iOS 15+ fallback
+          @"prefs:root=Privacy&path=LOCATION_SERVICES", // older form
+          @"prefs:root=Privacy&path=LOCATION",
           @"App-Prefs:LOCATION_SERVICES",                                        // iOS 18
           @"App-Prefs:root=Privacy&path=LOCATION_SERVICES",                      // iOS 16–17
           @"App-Prefs:root=Privacy&path=LOCATION",                               // iOS 13–15
@@ -215,8 +218,7 @@
     return;
   }
   NSURL *url = [NSURL URLWithString:urls[index]];
-  BOOL canOpen = [[UIApplication sharedApplication] canOpenURL:url];
-  NSLog(@"[LocationSettings] Trying: %@ | canOpen: %d", urls[index], canOpen);
+  NSLog(@"[LocationSettings] Trying: %@", urls[index]);
   [[UIApplication sharedApplication]
           openURL:url
           options:@{}
