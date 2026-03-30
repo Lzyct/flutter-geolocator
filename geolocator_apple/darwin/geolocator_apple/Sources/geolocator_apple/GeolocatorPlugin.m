@@ -198,10 +198,8 @@
           @"settings-navigation://com.apple.Settings.Privacy.LocationServices", // iOS 26+ (correct pane)
           @"prefs:root=Privacy&path=LOCATION_SERVICES", // older form
           @"prefs:root=Privacy&path=LOCATION",
-          @"App-Prefs:root=Privacy&path=LOCATION_SERVICES",                      // iOS 16–17
-          @"App-Prefs:root=Privacy&path=LOCATION",                               // iOS 13–15
-          @"App-Prefs:root=Privacy",                                             // Fallback: Privacy root
           @"prefs:root=LOCATION_SERVICES",
+          @"App-Prefs:root=Privacy",                                             // Fallback: Privacy root
           UIApplicationOpenSettingsURLString,                                    // Final fallback
   ];
   [self tryOpenURLs:candidates atIndex:0 result:result];
