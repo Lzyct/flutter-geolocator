@@ -195,12 +195,13 @@
   // through candidates and fall back to the app's own settings page as a last
   // resort (which still surfaces the per-app Location row).
   NSArray<NSString *> *candidates = @[
-    @"App-Prefs:LOCATION_SERVICES",          // iOS 18+
-    @"App-Prefs:root=Privacy&path=LOCATION_SERVICES", // iOS 16+ (Privacy & Security -> Location Services)
-    @"App-Prefs:root=Privacy&path=LOCATION", // iOS 13–15 (Privacy -> Location Services)
-    @"App-Prefs:Privacy&path=LOCATION",      // iOS 13–15 (short form)
-    @"App-Prefs:root=Privacy",               // Fallback: Privacy & Security
-    UIApplicationOpenSettingsURLString,      // final fallback: app settings
+          @"settings-navigation://com.apple.Settings.Privacy/LOCATION", // iOS 26+
+          @"App-Prefs:LOCATION_SERVICES",                               // iOS 18
+          @"App-Prefs:root=Privacy&path=LOCATION_SERVICES",             // iOS 16+
+          @"App-Prefs:root=Privacy&path=LOCATION",                      // iOS 13–15
+          @"App-Prefs:Privacy&path=LOCATION",                           // iOS 13–15 short form
+          @"App-Prefs:root=Privacy",                                     // Fallback: Privacy & Security
+          UIApplicationOpenSettingsURLString,                            // Final fallback: app settings
   ];
   [self tryOpenURLs:candidates atIndex:0 result:result];
 #endif
@@ -208,23 +209,28 @@
 
 #if !TARGET_OS_OSX
 - (void)tryOpenURLs:(NSArray<NSString *> *)urls
-            atIndex:(NSUInteger)index
-             result:(FlutterResult)result {
+        atIndex:(NSUInteger)index
+        result:(FlutterResult)result {
   if (index >= urls.count) {
     result([[NSNumber alloc] initWithBool:NO]);
     return;
   }
   NSURL *url = [NSURL URLWithString:urls[index]];
+  if (![[UIApplication sharedApplication] canOpenURL:url]) {
+    // Skip URLs the system won't open (e.g. restricted by MDM)
+    [self tryOpenURLs:urls atIndex:index + 1 result:result];
+    return;
+  }
   [[UIApplication sharedApplication]
-   openURL:url
-   options:[[NSDictionary alloc] init]
-   completionHandler:^(BOOL success) {
+          openURL:url
+          options:@{}
+completionHandler:^(BOOL success) {
     if (success) {
       result([[NSNumber alloc] initWithBool:YES]);
     } else {
       [self tryOpenURLs:urls atIndex:index + 1 result:result];
     }
-  }];
+}];
 }
 #endif
 
